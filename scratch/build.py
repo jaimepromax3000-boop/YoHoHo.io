@@ -80,6 +80,15 @@ VOL_QW, VOL_QH = vol.width / 2 / 50, vol.height / 2 / 50     # en unidades de mu
 g_png, s_png = A.tile_images()
 addc("tile_grass", g_png); addc("tile_sand", s_png)
 for lv in range(1, 8): addc(f"mini{lv}", A.minimap_png(lv))
+PET0 = len(T.costumes) + 1
+for i in range(1, 10): addc(f"pet{i}", A.pet_png(i))
+addc("heart", A.heart_png())
+addc("tab_chars_on", A.ui_button("Characters", 110, 30, (255, 140, 0, 255), (140, 70, 0, 255)))
+addc("tab_chars_off", A.ui_button("Characters", 110, 30, (150, 90, 40, 255), (70, 40, 10, 255)))
+addc("tab_pets_on", A.ui_button("Pets", 80, 30, (255, 140, 0, 255), (140, 70, 0, 255)))
+addc("tab_pets_off", A.ui_button("Pets", 80, 30, (150, 90, 40, 255), (70, 40, 10, 255)))
+addc("btn_up", A.ui_button(" ", 230, 30, (255, 140, 0, 255), (140, 70, 0, 255)))
+addc("btn_up_off", A.ui_button(" ", 230, 30, (150, 150, 150, 255), (90, 90, 90, 255)))
 addc("dot_white", A.circle_png(40, (255, 255, 255))); addc("dot_red", A.circle_png(40, (255, 31, 33)))
 bar_frame, bar_fill = A.bar_images()
 addc("bar_frame", bar_frame); addc("bar_fill", bar_fill)
@@ -136,7 +145,7 @@ def padz(a, n=N_MAX): return list(a) + [0] * (n - len(a))
 
 ENT_LISTS = ["ex", "ey", "erot", "etrot", "esc", "ehp", "emhp", "edmg", "efood", "efuel", "eatk", "eatkl", "ewrot", "ewst",
              "ekt", "ekd", "eskin", "edead", "emov", "echg", "ecc", "ead", "eadt", "ekills", "ekt2", "ekrow", "efog",
-             "ekiller", "elv", "ept", "etgt", "ehx", "ehy", "eux", "euy", "elast", "eflash"]
+             "ekiller", "elv", "ept", "etgt", "ehx", "ehy", "eux", "euy", "elast", "eflash", "epet", "epx", "epy", "eprot", "eptop", "epdir", "epheal"]
 for n in ENT_LISTS: lst(n, [0] * N_MAX)
 lst("ename", [""] * N_MAX)
 lst("cx", [0] * POOL); lst("cy", [0] * POOL); lst("cv", [0] * POOL); lst("cnx", [0] * POOL)
@@ -155,6 +164,10 @@ lst("sk_s1", [round(geo[n]["s1"], 4) for n in range(1, 36)])
 lst("sk_hw", [round(geo[n]["hw"], 4) for n in range(1, 36)])
 lst("sk_px", [max(CPX[f"b{n}"]) for n in range(1, 36)])
 lst("owned", [1] + [0] * 34)
+lst("powned", [0] * 9); lst("pet_price", G.PET_PRICE[1:]); lst("pet_up", G.PET_UP); lst("pet_ia", G.PET_IA); lst("pet_bot", G.PET_BOT)
+lst("pet_px", [max(CPX[f"pet{i}"]) for i in range(1, 10)])
+for n in ("gx", "gy", "gr", "gs", "gk"): lst("g_" + n[1], [0] * 80)
+lst("g_t", [-1000] * 80)
 lst("xpt", G.XP)
 lst("mapsz", G.MAPSIZE); lst("bot_hp", G.BOT_HP); lst("bot_dmg", G.BOT_DMG)
 lst("fr_x", G.FR_X); lst("fr_k", G.FR_K); lst("fr_m", G.FR_M); lst("atk_b", G.ATK_B); lst("atk_t", G.ATK_T)
@@ -176,13 +189,13 @@ lst("cuw", [round(CPX[n][0] / A.KD, 4) if True else 0 for n in [t["name"] for t 
 for name, init in [("state", 0), ("tick", 0), ("acc", 0), ("lastT", 0), ("N", 50), ("alive", 50), ("ie", 50), ("lvl", 1),
                    ("camx", 25), ("camy", 25), ("PPU", PPU0), ("follow", 1), ("ret", 0), ("myskin", 1), ("coins", 0), ("xp", 0),
                    ("username", "You"), ("mdown", 0), ("pdown", 0), ("endT", 0), ("rank", 1), ("resTxt", ""), ("resKiller", ""),
-                   ("surv", 0), ("zx", 25), ("zy", 25), ("zr", 0), ("zT", 0), ("zPh", 1), ("zStep", 0), ("zmx", 25), ("zmy", 25), ("zer", 0),
+                   ("myPet", 0), ("plevel", 0), ("petTab", 0), ("npets", 0), ("gptr", 0), ("surv", 0), ("zx", 25), ("zy", 25), ("zr", 0), ("zT", 0), ("zPh", 1), ("zStep", 0), ("zmx", 25), ("zmy", 25), ("zer", 0),
                    ("zdx", 0), ("zdy", 0), ("zdr", 0), ("dbg", 0), ("won", 0), ("gainXP", 0), ("gainCoins", 0), ("tstart", 0),
                    ("msg1", ""), ("msg1T", 0), ("msg2", ""), ("msg2T", 0), ("msg3", ""), ("msg3T", 0), ("upN", 0), ("upT", -999),
                    ("quote", ""), ("lvlBefore", 1), ("sel", 0), ("toast", ""), ("toastT", 0), ("kbd", 0), ("bB", 0.9), ("bT", 1.1),
                    ("botHP", 100), ("botDMG", 34), ("nDecor", 0), ("nCoins", 0), ("nn", 0), ("nnd", 0), ("bc", 0), ("bcd", 0)]:
     P.var(name, init)
-for n in ["i", "j", "k", "gx", "gy", "gx0", "gy0", "gx1", "gy1", "cell", "c", "pv", "nx", "r2", "sx", "sy", "tx", "ty", "ta", "tb",
+for n in ["pI", "pb", "ptx", "pty", "pm", "i", "j", "k", "gx", "gy", "gx0", "gy0", "gx1", "gy1", "cell", "c", "pv", "nx", "r2", "sx", "sy", "tx", "ty", "ta", "tb",
           "hx", "hy", "ux", "uy", "pa", "dd", "dist", "dmg", "hf", "wl", "wlj", "ss", "sc", "sj", "hh", "ww", "zoom", "halfW", "halfH",
           "off", "px", "py", "cnt", "idx", "wi", "cs", "ch", "lo", "hi", "tw", "txs", "scl", "pct", "sz", "yy", "tlen", "ci", "nm",
           "qx", "qy", "vv", "vis", "mg", "decr", "pos", "tries", "okp", "cc", "ang", "rdy", "tmp", "tmp2", "ldr", "dsk", "dh2", "ex1", "ey1",
@@ -412,7 +425,8 @@ proc("move", ["e"], [
        [If(Lg("eatk", arg("e")) > 0, [
             If((Lg("efuel", arg("e")) / 100 > 0.2) & ((10 - Lg("eatkl", arg("e"))) / 10 <= Lg("efuel", arg("e")) / 100), [
                 Ls("ex", arg("e"), Lg("ex", arg("e")) + (1 / 60) * 10 * cos(Lg("erot", arg("e")))),
-                Ls("ey", arg("e"), Lg("ey", arg("e")) + (1 / 60) * 10 * sin(Lg("erot", arg("e"))))])],
+                Ls("ey", arg("e"), Lg("ey", arg("e")) + (1 / 60) * 10 * sin(Lg("erot", arg("e")))),
+                If(tick_() - Lg("elast", arg("e")) >= 2, [call("addghost", arg("e")), Ls("elast", arg("e"), tick_())])])],
            [If(Lg("emov", arg("e")) > 0, [
                 Ls("ex", arg("e"), Lg("ex", arg("e")) + (1 / 60) * 2.5 * cos(Lg("erot", arg("e")))),
                 Ls("ey", arg("e"), Lg("ey", arg("e")) + (1 / 60) * 2.5 * sin(Lg("erot", arg("e"))))])])]),
@@ -578,6 +592,8 @@ proc("simtick", [], [
                [Ls("efog", v("i"), 0)]),
             If(Lg("ehp", v("i")) <= 0, [call("die", v("i"), 0)], [call("geom", v("i"))])])]),
     call("hitpass"),
+    setv("i", 0),
+    Repeat(v("N"), [chgv("i", 1), If(Lg("epet", v("i")) > 0, [call("petstep", v("i"))])]),
     If(v("msg1T") > 0, [chgv("msg1T", -1)]), If(v("msg2T") > 0, [chgv("msg2T", -1)]), If(v("msg3T") > 0, [chgv("msg3T", -1)]),
     setv("i", 0),
     Repeat(DEAD_MAX, [chgv("i", 1), If(Lg("mt", v("i")) > 0, [Ls("mt", v("i"), Lg("mt", v("i")) - 1)])]),
@@ -695,6 +711,14 @@ proc("newgame", [], [
     Ls("erot", 1, rnd(0, 359)), Ls("etrot", 1, Lg("erot", 1)), Ls("efood", 1, 0), Ls("ewrot", 1, 90), Ls("ename", 1, v("username")),
     Ls("esc", 1, 1), Ls("ekt2", 1, -9999),
     call("geom", 1),
+    # mascotas: la del jugador y, a veces, la de los bots (a partir de la isla 2)
+    If((v("myPet") > 0) & (Lg("powned", v("myPet")) > 0), [Ls("epet", 1, v("myPet")), call("petspawn", 1)]),
+    If(v("lvl") >= 2, [
+        setv("i", 1),
+        Repeat(v("N") - 1, [chgv("i", 1),
+            If(rnd(1, 100) <= Lg("pet_bot", v("lvl") + 1), [Ls("epet", v("i"), rnd(1, 9)), call("petspawn", v("i"))])])]),
+    setv("i", 0), setv("gptr", 0),
+    Repeat(80, [chgv("i", 1), Ls("g_t", v("i"), -1000)]),
     # monedas y cofres
     setv("i", 0),
     Repeat(400, [call("addcoin", rnd(NE * 100, (v("ie") - NE) * 100) / 100, rnd(NE * 100, (v("ie") - NE) * 100) / 100, 5)]),
@@ -977,35 +1001,67 @@ proc("menuframe", [], [
         If(inbox(150, -164, 45, 13), [setv("state", 3), setv("toastT", 0)])]),
 ])
 
-# ---- selección de personaje
+# ---- selección de personaje y mascota
+def kfmt(price_expr, x, y, pct):
+    return If(price_expr >= 1000, [text("D", join(price_expr / 1000, "k"), x, y, pct, 1)], [text("D", price_expr, x, y, pct, 1)])
+
+
 proc("skinsframe", [], [
     pen_clear(),
     pen_color("#13abb0"), pen_transp(0), pen_size(1200), goto(0, 0), pen_down(), pen_up(),
     stamp_ui("panel_skin", 0, 6, 100),
-    text("D", "Pick yer character", -150, 160, 34, 0),
+    # pestañas
+    If(eq(v("petTab"), 0), [stamp_ui("tab_chars_on", -95, 160, 100)], [stamp_ui("tab_chars_off", -95, 160, 100)]),
+    If(v("lvl") >= 2, [If(eq(v("petTab"), 1), [stamp_ui("tab_pets_on", 15, 160, 100)], [stamp_ui("tab_pets_off", 15, 160, 100)])]),
     stamp_ui("icon-coin", 120, 160, 28),
     text("D", floor(v("coins")), 132, 160, 30, 0),
-    setv("k", 0),
-    Repeat(35, [chgv("k", 1),
-        setv("qx", (v("k") - 1) % 7), setv("qy", floor((v("k") - 1) / 7)),
-        setv("tx", -186 + v("qx") * 62), setv("ty", 118 - v("qy") * 56),
-        If(eq(v("k"), v("myskin")), [costume(CI["card_sel"])],
-           [If(Lg("owned", v("k")) > 0, [costume(CI["card"])], [costume(CI["card_locked"])])]),
-        goto(v("tx"), v("ty")), size_to(46), direction(90), stamp(),
-        goto(v("tx"), v("ty") + 6), costume(B0 - 1 + v("k")),
-        size_to(32 * 100 / Lg("sk_px", v("k"))), stamp(),
-        If(Lg("owned", v("k")) > 0, [],
-           [If(Lg("sk_lvl", v("k")) > v("lvl"),
-               [text("D", join("Isl. ", Lg("sk_lvl", v("k"))), v("tx"), v("ty") - 21, 15, 1)],
-               [If(Lg("sk_price", v("k")) >= 1000,
-                   [text("D", join(Lg("sk_price", v("k")) / 1000, "k"), v("tx"), v("ty") - 21, 17, 1)],
-                   [text("D", Lg("sk_price", v("k")), v("tx"), v("ty") - 21, 17, 1)])])])]),
+    If(eq(v("petTab"), 0), [
+        setv("k", 0),
+        Repeat(35, [chgv("k", 1),
+            setv("qx", (v("k") - 1) % 7), setv("qy", floor((v("k") - 1) / 7)),
+            setv("tx", -186 + v("qx") * 62), setv("ty", 118 - v("qy") * 56),
+            If(eq(v("k"), v("myskin")), [costume(CI["card_sel"])],
+               [If(Lg("owned", v("k")) > 0, [costume(CI["card"])], [costume(CI["card_locked"])])]),
+            goto(v("tx"), v("ty")), size_to(46), direction(90), stamp(),
+            goto(v("tx"), v("ty") + 6), costume(B0 - 1 + v("k")),
+            size_to(32 * 100 / Lg("sk_px", v("k"))), stamp(),
+            If(Lg("owned", v("k")) > 0, [],
+               [If(Lg("sk_lvl", v("k")) > v("lvl"),
+                   [text("D", join("Isl. ", Lg("sk_lvl", v("k"))), v("tx"), v("ty") - 21, 15, 1)],
+                   [kfmt(Lg("sk_price", v("k")), v("tx"), v("ty") - 21, 17)])])])],
+       [   # ---- mascotas
+        setv("k", 0),
+        Repeat(9, [chgv("k", 1),
+            setv("qx", (v("k") - 1) % 5), setv("qy", floor((v("k") - 1) / 5)),
+            setv("tx", -124 + v("qx") * 62), setv("ty", 108 - v("qy") * 62),
+            If(eq(v("k"), v("myPet")), [costume(CI["card_sel"])],
+               [If(Lg("powned", v("k")) > 0, [costume(CI["card"])], [costume(CI["card_locked"])])]),
+            goto(v("tx"), v("ty")), size_to(46), direction(90), stamp(),
+            goto(v("tx"), v("ty") + 6), costume(PET0 - 1 + v("k")),
+            size_to(34 * 100 / Lg("pet_px", v("k"))), stamp(),
+            If(eq(Lg("powned", v("k")), 0), [kfmt(Lg("pet_price", v("k")), v("tx"), v("ty") - 21, 17)])]),
+        # regeneración y mejora
+        setv("tmp", 0), If(v("myPet") > 0, [setv("tmp", 11 + 2 * v("plevel"))]),
+        text("D", join(join("Your pet regenerates: ", v("tmp")), " Health Points/s"), 0, -2, 24, 1),
+        # estado del botón de mejora: 0 no disponible, 1 disponible, 2 al máximo
+        setv("tmp2", 1),
+        If(v("plevel") + 1 >= 15, [setv("tmp2", 2)],
+           [If((v("npets") < 1) | (v("lvl") < Lg("pet_ia", v("plevel") + 2)), [setv("tmp2", 0)])]),
+        If(eq(v("tmp2"), 1), [
+            If(v("coins") >= Lg("pet_up", v("plevel") + 2), [stamp_ui("btn_up", 0, -32, 100)], [stamp_ui("btn_up_off", 0, -32, 100)]),
+            text("W", join("Upgrade for ", Lg("pet_up", v("plevel") + 2)), 0, -32, 26, 1)],
+           [stamp_ui("btn_up_off", 0, -32, 100),
+            If(eq(v("tmp2"), 2), [text("W", "Fully upgraded", 0, -32, 26, 1)], [text("W", "Upgrade Not Available", 0, -32, 26, 1)])]),
+        text("D", "Heals you when it is next to you", 0, -62, 20, 1)]),
     If(v("toastT") > 0, [chgv("toastT", -1), text("R", v("toast"), 0, -131, 28, 1)]),
     stamp_ui("btn_back", 0, -153, 45),
     *press(),
     If(v("pressed") > 0, [
         If(inbox(0, -153, 28, 11), [setv("state", 0)]),
-        If((mouse_x() > -217) & (mouse_x() < 217) & (mouse_y() < 146) & (mouse_y() > -134), [
+        If(inbox(-95, 160, 55, 15), [setv("petTab", 0)]),
+        If(inbox(15, 160, 40, 15) & (v("lvl") >= 2), [setv("petTab", 1)]),
+        If(eq(v("petTab"), 0), [
+          If((mouse_x() > -217) & (mouse_x() < 217) & (mouse_y() < 146) & (mouse_y() > -134), [
             setv("qx", floor((mouse_x() + 186 + 31) / 62)), setv("qy", floor((118 + 28 - mouse_y()) / 56)),
             setv("k", v("qy") * 7 + v("qx") + 1),
             If((v("qx") >= 0) & (v("qx") < 7) & (v("qy") >= 0) & (v("k") >= 1) & (v("k") <= 35), [
@@ -1014,7 +1070,19 @@ proc("skinsframe", [], [
                        [setv("toast", join(join("Reach the ", Lg("islands", Lg("sk_lvl", v("k")) + 1)), " island")), setv("toastT", 120)],
                        [If(v("coins") < Lg("sk_price", v("k")),
                            [setv("toast", "You don't own enough coins"), setv("toastT", 120)],
-                           [chgv("coins", -Lg("sk_price", v("k"))), Ls("owned", v("k"), 1), setv("myskin", v("k"))])])])])])]),
+                           [chgv("coins", -Lg("sk_price", v("k"))), Ls("owned", v("k"), 1), setv("myskin", v("k"))])])])])])],
+          [ # mascotas: elegir/comprar y mejorar
+            setv("qx", floor((mouse_x() + 124 + 31) / 62)), setv("qy", floor((108 + 31 - mouse_y()) / 62)),
+            setv("k", v("qy") * 5 + v("qx") + 1),
+            If((v("qx") >= 0) & (v("qx") < 5) & (v("qy") >= 0) & (v("qy") < 2) & (v("k") >= 1) & (v("k") <= 9) & (mouse_y() > 15), [
+                If(Lg("powned", v("k")) > 0, [setv("myPet", v("k"))],
+                   [If(v("coins") < Lg("pet_price", v("k")),
+                       [setv("toast", "You don't own enough coins to unlock this pet"), setv("toastT", 120)],
+                       [chgv("coins", -Lg("pet_price", v("k"))), Ls("powned", v("k"), 1), chgv("npets", 1), setv("myPet", v("k"))])])]),
+            If(inbox(0, -32, 115, 15) & eq(v("tmp2"), 1) & (v("coins") >= Lg("pet_up", v("plevel") + 2)), [
+                chgv("coins", -Lg("pet_up", v("plevel") + 2)), chgv("plevel", 1)]),
+            If(inbox(0, -32, 115, 15) & eq(v("tmp2"), 1) & (v("coins") < Lg("pet_up", v("plevel") + 2)), [
+                setv("toast", "You don't own enough coins to upgrade your pet"), setv("toastT", 120)])])]),
 ])
 
 
@@ -1068,8 +1136,10 @@ proc("render", [], [
     pen_clear(),
     call("drawground"),
     call("drawdecor", 0),
+    call("drawghosts"),
     call("drawcoins"),
-    call("drawents", 0), call("drawents", 1), call("drawents", 2), call("drawents", 3),
+    call("drawents", 0), call("drawents", 1), call("drawpets", 0), call("drawents", 2), call("drawents", 3),
+    call("drawpets", 1),
     call("drawdecor", 1),
     call("drawfog"),
     call("drawhud"),
@@ -1109,6 +1179,80 @@ proc("gameframe", [], [
     call("render"),
     If(eq(v("state"), 2), [call("endframe")]),
 ])
+
+
+# ================================================================ estela del dash
+proc("addghost", ["e"], [
+    setv("gptr", (v("gptr") % 80) + 1),
+    Ls("g_x", v("gptr"), Lg("ex", arg("e"))), Ls("g_y", v("gptr"), Lg("ey", arg("e"))),
+    Ls("g_r", v("gptr"), Lg("erot", arg("e"))), Ls("g_s", v("gptr"), Lg("esc", arg("e"))),
+    Ls("g_k", v("gptr"), Lg("eskin", arg("e"))), Ls("g_t", v("gptr"), tick_())])
+
+proc("drawghosts", [], [
+    setv("k", 0),
+    Repeat(80, [chgv("k", 1),
+        If(tick_() - Lg("g_t", v("k")) < 40, [
+            If((fabs(Lg("g_x", v("k")) - v("camx")) < v("halfW") + 1.5) & (fabs(Lg("g_y", v("k")) - v("camy")) < v("halfH") + 1.5), [
+                ghost(100 - 50 * (1 - (tick_() - Lg("g_t", v("k"))) / 40)),
+                call("stampw", Lg("g_x", v("k")), Lg("g_y", v("k")), B0 - 1 + Lg("g_k", v("k")), Lg("g_s", v("k")) * 100 / KBODY, 90 + Lg("g_r", v("k"))),
+                clear_effects()])])])])
+
+# ================================================================ mascotas
+proc("petspawn", ["e"], [
+    setv("ang", rnd(0, 359)),
+    Ls("epx", arg("e"), Lg("ex", arg("e")) + cos(v("ang")) * NE * 18), Ls("epy", arg("e"), Lg("ey", arg("e")) + sin(v("ang")) * NE * 18),
+    Ls("eprot", arg("e"), v("ang") + 180), Ls("eptop", arg("e"), rnd(0, 359)),
+    If(rnd(0, 1) < 1, [Ls("epdir", arg("e"), -1)], [Ls("epdir", arg("e"), 1)]),
+    Ls("epheal", arg("e"), -1000)])
+
+def If_expr_heal(e):
+    """1 si el dueño está herido, 3 si no (radio de reposo de la mascota)."""
+    return 3 - 2 * (Lg("ehp", e) < Lg("emhp", e))
+
+
+proc("petstep", ["e"], [
+    If(eq(Lg("edead", arg("e")), 0) & (v("alive") > 1), [
+        setv("pI", sqrt((Lg("ex", arg("e")) - Lg("epx", arg("e"))) * (Lg("ex", arg("e")) - Lg("epx", arg("e"))) +
+                        (Lg("ey", arg("e")) - Lg("epy", arg("e"))) * (Lg("ey", arg("e")) - Lg("epy", arg("e"))))),
+        setv("pb", 2.5),
+        If(Lg("emov", arg("e")) > 0, [
+            If(v("pI") < 6 * NE, [setv("pb", v("pb") * (0.4 + (v("pI") / (6 * NE)) * 0.6))]),
+            If(v("pI") > 8 * NE, [setv("pb", v("pb") * 1.2)])]),
+        If((v("pI") < 2 * NE) & (Lg("ehp", arg("e")) < Lg("emhp", arg("e"))), [setv("pb", 0.4 * 2.5)]),
+        setv("ptx", Lg("ex", arg("e"))), setv("pty", Lg("ey", arg("e"))),
+        If(Lg("ehp", arg("e")) >= Lg("emhp", arg("e")), [
+            setv("pm", 4 * NE),
+            If(eq(v("tick") % 300, 0), [If(rnd(0, 1) < 1, [Ls("epdir", arg("e"), -1)], [Ls("epdir", arg("e"), 1)])]),
+            Ls("eptop", arg("e"), Lg("eptop", arg("e")) + (v("pb") / v("pm") / 60) * Lg("epdir", arg("e")) * 57.29578),
+            setv("ptx", v("ptx") + cos(Lg("eptop", arg("e"))) * v("pm")),
+            setv("pty", v("pty") + sin(Lg("eptop", arg("e"))) * v("pm"))]),
+        If(v("pI") > NE * If_expr_heal(arg("e")), [
+            call("ang2", v("pty") - Lg("epy", arg("e")), v("ptx") - Lg("epx", arg("e"))),
+            call("adiff", v("ret"), Lg("eprot", arg("e"))),
+            Ls("eprot", arg("e"), Lg("eprot", arg("e")) + clamp(v("ret"), -TURN, TURN))]),
+        If((v("pI") < NE) & (Lg("ehp", arg("e")) < Lg("emhp", arg("e"))) & eq(Lg("efog", arg("e")), 0), [
+            Ls("ehp", arg("e"), MIN(Lg("emhp", arg("e")), Lg("ehp", arg("e")) + (11 + 2 * v("plevel")) / 60)),
+            Ls("epheal", arg("e"), tick_())])],
+       [setv("pb", 2.5)]),
+    Ls("epx", arg("e"), Lg("epx", arg("e")) + cos(Lg("eprot", arg("e"))) * v("pb") / 60),
+    Ls("epy", arg("e"), Lg("epy", arg("e")) + sin(Lg("eprot", arg("e"))) * v("pb") / 60),
+])
+
+
+proc("drawpets", ["layer"], [
+    setv("i", 0),
+    Repeat(v("N"), [chgv("i", 1),
+        If(Lg("epet", v("i")) > 0, [
+            setv("tmp", 1),
+            If((eq(Lg("epet", v("i")), 3)) | eq(Lg("epet", v("i")), 4) | eq(Lg("epet", v("i")), 5) | eq(Lg("epet", v("i")), 8), [setv("tmp", 0)]),
+            If(eq(v("tmp"), arg("layer")) &
+               (fabs(Lg("epx", v("i")) - v("camx")) < v("halfW") + 1.5) & (fabs(Lg("epy", v("i")) - v("camy")) < v("halfH") + 1.5), [
+                call("stampw", Lg("epx", v("i")), Lg("epy", v("i")), PET0 - 1 + Lg("epet", v("i")), 100 / KBODY, 90 + Lg("eprot", v("i"))),
+                If(tick_() - Lg("epheal", v("i")) < 24, [          # corazones mientras cura
+                    ghost((tick_() - Lg("epheal", v("i"))) * 100 / 24),
+                    call("stampw", Lg("epx", v("i")) + 0.15 * sin(tick_() * 30), Lg("epy", v("i")) - 0.25 - (tick_() - Lg("epheal", v("i"))) * 0.035,
+                         CI["heart"], 100 / KBODY, 90),
+                    clear_effects()])])])])])
 
 # ================================================================ guion principal
 T.on_flag([

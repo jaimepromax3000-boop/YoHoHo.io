@@ -68,3 +68,10 @@ def load_names(n=270, seed=7):
     names = names[:n] + YOUTUBERS
     rnd.shuffle(names)
     return names
+
+# mascotas (De>=13): precio de cada mascota, coste de mejora, isla mínima de cada mejora, probabilidad de los bots (%)
+PET_PRICE = [0, 10000, 10000, 15000, 15000, 15000, 20000, 20000, 20000, 30000]
+PET_UP = [1000, 2000, 3000, 5000, 7000, 9000, 13000, 17000, 22000, 26000, 31000, 37000, 43000, 53000, 63000]
+PET_IA = [2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 7]
+PET_BOT = [0, 0, 1, 2, 3, 5, 8, 10, 10]     # indexado por nivel de isla (0..8)
+PET_BELOW = [3, 4, 5, 8]                    # mascotas que van por debajo de las armas

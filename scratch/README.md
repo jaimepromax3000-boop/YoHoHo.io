@@ -17,7 +17,8 @@ Mapas, tamaños y decorado de las 7 islas · 49 bots con la IA original (buscar 
 que tienen cerca, cargar el dash, perseguir al jugador en islas altas) · stats de vida/daño por personaje y por isla ·
 tamaño según monedas comidas (curva de Bézier, 10 escalones) · swing alterno de arma, knockback, choque de armas ·
 cofres y monedas (50/25/5) · muerte: el botín cae al suelo · tormenta con los 8 pasos del original · minimapa, contador de
-tormenta/jugadores/bajas, mensajes "Double/Triple Kill…", "Size UP", pantalla final con rango, tiempo, XP y frase.
+tormenta/jugadores/bajas, estela del dash, mascotas (9 tipos: siguen y curan al dueño, se compran y mejoran en
+«Characters → Pets», a partir de la isla Beach; algunos bots también las llevan), mensajes "Double/Triple Kill…", "Size UP", pantalla final con rango, tiempo, XP y frase.
 
 ## Cómo está hecho
 Un único sprite oculto (`Pirata`) simula y dibuja con la extensión **Lápiz** (`estampar`), igual que un motor 2D.
@@ -25,9 +26,9 @@ Todo el estado está en variables y listas de Scratch (una lista por atributo de
 etc.) y la lógica está en unos 40 bloques personalizados «ejecutar sin refrescar pantalla».
 
 ## Diferencias respecto al original (limitaciones honestas)
-- No hay mascotas, anuncios, login ni guardado entre sesiones (Scratch no tiene almacenamiento local; el botín y la XP
-  duran hasta que cierras el proyecto).
-- No se dibujan la cuadrícula tenue del suelo, la corona del líder, las chispas del choque de armas ni la estela del dash.
+- No hay anuncios ni login, ni guardado entre sesiones (Scratch no tiene almacenamiento local; el botín, la XP y las
+  mascotas compradas duran hasta que cierras el proyecto).
+- No se dibujan la cuadrícula tenue del suelo, la corona del líder ni las chispas del choque de armas.
 - El suelo usa losetas de 2×2 unidades: el borde de arena es de 2 en vez de 1,5 unidades.
 - La zona de golpe del arma es una cápsula (centro de la hoja + ancho) en vez del polígono exacto.
 - El texto usa la fuente Nunito del juego, convertida en disfraces (solo ASCII).

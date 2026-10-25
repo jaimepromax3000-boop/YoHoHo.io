@@ -209,3 +209,17 @@ def circle_png(px, color, alpha=255):
 
 def solid_png(w, h, color):
     return png(Image.new("RGBA", (w, h), color))
+
+
+def pet_png(i):
+    p = frame(f"pet-{i}")
+    w = round(0.54 * KB)
+    return png(p.resize((w, max(1, round(p.height * w / p.width))), Image.LANCZOS))
+
+
+def heart_png():
+    h = frame("heart")
+    r = Image.new("RGBA", h.size, (255, 90, 130, 255))
+    r.putalpha(h.split()[3])
+    w = round(0.22 * KB)
+    return png(r.resize((w, max(1, round(h.height * w / h.width))), Image.LANCZOS))
