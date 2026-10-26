@@ -83,12 +83,12 @@ for lv in range(1, 8): addc(f"mini{lv}", A.minimap_png(lv))
 PET0 = len(T.costumes) + 1
 for i in range(1, 10): addc(f"pet{i}", A.pet_png(i))
 addc("heart", A.heart_png())
-addc("tab_chars_on", A.ui_button("Characters", 110, 30, (255, 140, 0, 255), (140, 70, 0, 255)))
-addc("tab_chars_off", A.ui_button("Characters", 110, 30, (150, 90, 40, 255), (70, 40, 10, 255)))
-addc("tab_pets_on", A.ui_button("Pets", 80, 30, (255, 140, 0, 255), (140, 70, 0, 255)))
-addc("tab_pets_off", A.ui_button("Pets", 80, 30, (150, 90, 40, 255), (70, 40, 10, 255)))
-addc("btn_up", A.ui_button(" ", 230, 30, (255, 140, 0, 255), (140, 70, 0, 255)))
-addc("btn_up_off", A.ui_button(" ", 230, 30, (150, 150, 150, 255), (90, 90, 90, 255)))
+addc("tab_chars_on", A.ui_button("Characters", 110, 30, (255, 140, 0, 255), (140, 70, 0, 255)), res=2)
+addc("tab_chars_off", A.ui_button("Characters", 110, 30, (150, 90, 40, 255), (70, 40, 10, 255)), res=2)
+addc("tab_pets_on", A.ui_button("Pets", 80, 30, (255, 140, 0, 255), (140, 70, 0, 255)), res=2)
+addc("tab_pets_off", A.ui_button("Pets", 80, 30, (150, 90, 40, 255), (70, 40, 10, 255)), res=2)
+addc("btn_up", A.ui_button(" ", 230, 30, (255, 140, 0, 255), (140, 70, 0, 255)), res=2)
+addc("btn_up_off", A.ui_button(" ", 230, 30, (150, 150, 150, 255), (90, 90, 90, 255)), res=2)
 addc("dot_white", A.circle_png(40, (255, 255, 255))); addc("dot_red", A.circle_png(40, (255, 31, 33)))
 bar_frame, bar_fill = A.bar_images()
 addc("bar_frame", bar_frame); addc("bar_fill", bar_fill)
@@ -97,14 +97,14 @@ addc("icon-coin", A.icon("coins_m", 64))
 
 # interfaz
 addc("title", A.ui_title(), res=2)
-addc("btn_play", A.ui_button("Play", 200, 56, (255, 140, 0, 255), (140, 70, 0, 255)))
-addc("btn_chars", A.ui_button("Characters", 170, 44, (60, 140, 200, 255), (20, 60, 100, 255)))
-addc("btn_cont", A.ui_button("Continue", 180, 48, (255, 140, 0, 255), (140, 70, 0, 255)))
-addc("btn_back", A.ui_button("Back", 110, 40, (150, 90, 40, 255), (70, 40, 10, 255)))
-addc("namebox", A.ui_namebox())
-addc("panel_end", A.ui_panel(380, 300))
-addc("panel_skin", A.ui_panel(470, 340))
-addc("card", A.ui_card()); addc("card_locked", A.ui_card(True)); addc("card_sel", A.ui_card(False, True))
+addc("btn_play", A.ui_button("Play", 200, 56, (255, 140, 0, 255), (140, 70, 0, 255)), res=2)
+addc("btn_chars", A.ui_button("Characters", 170, 44, (60, 140, 200, 255), (20, 60, 100, 255)), res=2)
+addc("btn_cont", A.ui_button("Continue", 180, 48, (255, 140, 0, 255), (140, 70, 0, 255)), res=2)
+addc("btn_back", A.ui_button("Back", 110, 40, (150, 90, 40, 255), (70, 40, 10, 255)), res=2)
+addc("namebox", A.ui_namebox(), res=2)
+addc("panel_end", A.ui_panel(380, 300), res=2)
+addc("panel_skin", A.ui_panel(470, 340), res=2)
+addc("card", A.ui_card(), res=2); addc("card_locked", A.ui_card(True), res=2); addc("card_sel", A.ui_card(False, True), res=2)
 addc("dim", A.solid_png(4, 4, (0, 0, 0, 120)))
 addc("pbar_bg", A.solid_png(40, 6, (90, 60, 30, 255))); addc("pbar_fg", A.solid_png(40, 6, (255, 140, 0, 255)))
 
@@ -114,13 +114,14 @@ GBASE = {}
 for key in "WDRY":
     GBASE[key] = len(T.costumes)        # costume index = base + (ascii - 31)
     for c, (data, wpx) in zip(range(32, 127), sets[key]):
-        addc(key + chr(c), data)
-GADV = [round(a) + 0 for a in adv]       # avance por glifo en px (índice ascii-32)
+        addc(key + chr(c), data, res=2)
+GADV = [round(a / 2, 2) for a in adv]    # avance por glifo en px lógicos (índice ascii-32)
 SZ_GLYPH = 56.0                          # tamaño de fuente en px de los glifos
 print("costumes:", len(T.costumes), file=sys.stderr)
 
 # ------------------------------------------------------------- constantes
-N_MAX = 100          # entidades máx (mapa 100x100 -> 100 jugadores)
+N_MAX = 80           # jugadores por partida: tú + 79 bots
+NPLAYERS = 80
 POOL = 3000          # monedas máx
 DECOR_MAX = 1000
 DEAD_MAX = 40
@@ -668,7 +669,7 @@ proc("newgame", [], [
     # nivel según la experiencia
     setv("lvl", 1),
     Until(v("xp") < Lg("xpt", v("lvl") + 1), [chgv("lvl", 1)]),
-    setv("ie", Lg("mapsz", v("lvl") + 1)), setv("N", v("ie")), setv("alive", v("N")),
+    setv("ie", Lg("mapsz", v("lvl") + 1)), setv("N", NPLAYERS), setv("alive", v("N")),
     setv("botHP", Lg("bot_hp", v("lvl") + 1)), setv("botDMG", Lg("bot_dmg", v("lvl") + 1)),
     setv("bB", Lg("atk_b", v("lvl") + 1)), setv("bT", Lg("atk_t", v("lvl") + 1)),
     setv("tick", 0), setv("won", 0), setv("endT", 0), setv("follow", 1), setv("upT", -999),

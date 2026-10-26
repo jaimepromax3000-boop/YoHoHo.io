@@ -91,29 +91,29 @@ def weapon_png(n, mirrored=False):
 
 
 # ---------------------------------------------------------------- fuentes
-FONT = ImageFont.truetype(f"{ROOT}/fonts/nunito-bold.ttf", 56)
-GH = 84    # alto de celda de glifo
+FONT = ImageFont.truetype(f"{ROOT}/fonts/nunito-bold.ttf", 112)
+GH = 168   # alto de celda de glifo (px reales; el disfraz se marca con resolución 2)
 
 
 def glyph_sets():
     """Devuelve {set: [(png, ancho_px)]} para ASCII 32..126 y la lista de avances."""
     sets = {}
     adv = [FONT.getlength(chr(c)) for c in range(32, 127)]
-    styles = {"W": ((255, 255, 255, 255), (20, 40, 60, 230), 3),
+    styles = {"W": ((255, 255, 255, 255), (20, 40, 60, 230), 6),
               "D": ((68, 68, 68, 255), None, 0),
-              "R": ((255, 31, 33, 255), (255, 255, 255, 255), 3),
-              "Y": ((255, 205, 40, 255), (90, 50, 0, 255), 3)}
+              "R": ((255, 31, 33, 255), (255, 255, 255, 255), 6),
+              "Y": ((255, 205, 40, 255), (90, 50, 0, 255), 6)}
     for key, (fill, stroke, sw) in styles.items():
         lst = []
         for c in range(32, 127):
-            a = adv[c - 32]; wpx = max(2, int(round(a)) + 2 * 5)
+            a = adv[c - 32]; wpx = max(2, 2 * (int(round(a / 2)) + 5))
             im = Image.new("RGBA", (wpx, GH), (0, 0, 0, 0))
             if c != 32:
                 d = ImageDraw.Draw(im)
                 if stroke:
-                    d.text((5, 12), chr(c), font=FONT, fill=fill, stroke_width=sw, stroke_fill=stroke)
+                    d.text((wpx / 2 - a / 2, 24), chr(c), font=FONT, fill=fill, stroke_width=sw, stroke_fill=stroke)
                 else:
-                    d.text((5, 12), chr(c), font=FONT, fill=fill)
+                    d.text((wpx / 2 - a / 2, 24), chr(c), font=FONT, fill=fill)
             lst.append((png(im), wpx))
         sets[key] = lst
     return sets, adv
@@ -137,6 +137,7 @@ def ui_title():
 
 
 def rrect(size, fill, outline=None, r=18, w=3):
+    size = (size[0] * 2, size[1] * 2); r *= 2; w *= 2          # 2x: se marcan con bitmapResolution 2
     im = Image.new("RGBA", size, (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     d.rounded_rectangle([0, 0, size[0] - 1, size[1] - 1], r, fill=fill, outline=outline, width=w)
@@ -146,8 +147,8 @@ def rrect(size, fill, outline=None, r=18, w=3):
 def ui_button(text, w, h, fill, outline):
     im = rrect((w, h), fill, outline, r=h // 3, w=4)
     d = ImageDraw.Draw(im)
-    f = ImageFont.truetype(f"{ROOT}/fonts/nunito-bold.ttf", int(h * 0.5))
-    d.text((w // 2, h // 2 + 1), text, font=f, fill=(255, 255, 255), anchor="mm", stroke_width=2, stroke_fill=(60, 30, 0))
+    f = ImageFont.truetype(f"{ROOT}/fonts/nunito-bold.ttf", int(h * 0.5) * 2)
+    d.text((w, h + 2), text, font=f, fill=(255, 255, 255), anchor="mm", stroke_width=4, stroke_fill=(60, 30, 0))
     return png(im)
 
 
